@@ -1,50 +1,75 @@
 <template>
     <div class="container pt-3">
-        <div class="h1 text-center border rounded bg-light p-2 mb-3">
-            API Client
-        </div>
-        <div class="mb-3">
-            <u>Response data</u>:             
-        </div>
-        <pre>{{ response_data }}</pre>
+        <h1 class="text-center border rounded bg-light p-3 mb-4">Player Contracts System</h1>
 
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        Launch demo modal
-        </button>
+        <!-- Bootstrap Tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#model-a-tab" role="tab">Players</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#model-b-tab" role="tab">Teams</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#relationship-tab" role="tab">Contracts</a>
+            </li>
+        </ul>
 
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Tab Content -->
+        <div class="tab-content pt-3">
+            <div class="tab-pane fade show active" id="model-a-tab" role="tabpanel">
+                <Player @update-list="handleUpdate" :data-list="playerList" />
             </div>
-            <div class="modal-body">
-                ...
+            <div class="tab-pane fade" id="model-b-tab" role="tabpanel">
+                <Team @update-list="handleUpdate" :data-list="teamList" />
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
+            <div class="tab-pane fade" id="relationship-tab" role="tabpanel">
+                <Contracts @update-list="handleUpdate" :data-list="contractList" :players="playerList" :teams="teamList" />
             </div>
         </div>
-        </div>
-
     </div>
-  </template>
-  
+</template>
+
 <script>
+import Player from './components/Player.vue';
+import Team from './components/Team.vue';
+import Contracts from './components/Contracts.vue';
+
 export default {
+    components: {
+        Player,
+        Team,
+        Contracts,
+    },
     data() {
         return {
-            response_data: '',
-        }
+            playerList: [],
+            teamList: [],
+            contractList: [],
+        };
     },
-    async mounted() {
-        const response = await fetch('http://localhost:8000/api/test.json')
-        this.response_data = await response.json()
-    }
-}
+    mounted() {
+        this.fetchData('players', 'playerList');
+        this.fetchData('teams', 'teamList');
+        this.fetchData('contracts', 'contractList');
+    },
+    methods: {
+        async fetchData(endpoint, listName) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/${endpoint}/`);
+                if (!response.ok) {
+                    console.error(`Error fetching ${endpoint}:`, await response.text());
+                    throw new Error(`Failed to fetch ${endpoint}`);
+                }
+                const data = await response.json();
+                this[listName] = data[endpoint];
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        },
+        handleUpdate({ model, list }) {
+            this[`${model}List`] = list;
+        },
+    },
+};
 </script>
