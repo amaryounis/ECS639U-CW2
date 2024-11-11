@@ -40,6 +40,7 @@ class Player(models.Model):
     def __str__(self):
         """
         Returns a string representation of the Player.
+
         """
         return self.name
 
@@ -65,6 +66,10 @@ class Contract(models.Model):
 
     def __str__(self):
 
-        """Returns a string representation of the Contract."""
+        """
+        
+        Returns a string representation of the Contract.
+        
+        """
         
         return f"{self.player.name} - {self.team.name} (Contract)"

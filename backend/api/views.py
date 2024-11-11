@@ -7,6 +7,7 @@ from django.views.generic import TemplateView
 class IndexView(TemplateView):
     """
     Renders the main index page where the Vue.js frontend is mounted.
+
     """
     template_name = "index.html"
 
@@ -16,8 +17,6 @@ def list_players(request):
     """
     Handles GET requests to list all players.
 
-    Returns:
-    - JsonResponse: A JSON response with a list of players.
     """
     if request.method == 'GET':
         players = list(Player.objects.values())
@@ -29,8 +28,6 @@ def create_player(request):
     """
     Handles POST requests to create a new player.
 
-    Returns:
-    - JsonResponse: A JSON response with the created player's information.
     """
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -47,11 +44,6 @@ def update_player(request, pk):
     """
     Handles PUT requests to update a specific player's details.
 
-    Parameters:
-    - pk (int): The primary key of the player to update.
-
-    Returns:
-    - JsonResponse: A JSON response indicating success or failure.
     """
     if request.method == 'PUT':
         try:
@@ -71,11 +63,6 @@ def delete_player(request, pk):
     """
     Handles DELETE requests to remove a player from the system.
 
-    Parameters:
-    - pk (int): The primary key of the player to delete.
-
-    Returns:
-    - JsonResponse: A JSON response indicating success or failure.
     """
     if request.method == 'DELETE':
         try:
@@ -92,8 +79,6 @@ def list_teams(request):
     """
     Handles GET requests to list all teams.
 
-    Returns:
-    - JsonResponse: A JSON response with a list of teams.
     """
     if request.method == 'GET':
         teams = list(Team.objects.values())
@@ -105,8 +90,6 @@ def create_team(request):
     """
     Handles POST requests to create a new team.
 
-    Returns:
-    - JsonResponse: A JSON response with the created team's information.
     """
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -124,11 +107,6 @@ def update_team(request, pk):
     """
     Handles PUT requests to update a specific team's details.
 
-    Parameters:
-    - pk (int): The primary key of the team to update.
-
-    Returns:
-    - JsonResponse: A JSON response indicating success or failure.
     """
     if request.method == 'PUT':
         try:
@@ -149,11 +127,6 @@ def delete_team(request, pk):
     """
     Handles DELETE requests to remove a team from the system.
 
-    Parameters:
-    - pk (int): The primary key of the team to delete.
-
-    Returns:
-    - JsonResponse: A JSON response indicating success or failure.
     """
     if request.method == 'DELETE':
         try:
@@ -170,8 +143,6 @@ def list_contracts(request):
     """
     Handles GET requests to list all contracts with player and team names.
 
-    Returns:
-    - JsonResponse: A JSON response with a list of contracts.
     """
     if request.method == 'GET':
         contracts = Contract.objects.values(
@@ -203,8 +174,6 @@ def create_contract(request):
     """
     Handles POST requests to create a new contract.
 
-    Returns:
-    - JsonResponse: A JSON response with the created contract's information.
     """
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -222,3 +191,37 @@ def create_contract(request):
             return JsonResponse({'message': 'Contract created successfully', 'contract': {'id': contract.id}})
         except (Player.DoesNotExist, Team.DoesNotExist) as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def update_contract(request, pk):
+    """
+    Handles PUT requests to update a specific contract's details.
+
+    """
+    if request.method == 'PUT':
+        try:
+            contract = Contract.objects.get(pk=pk)
+            data = json.loads(request.body)
+            contract.contract_start_date = data.get('contract_start_date', contract.contract_start_date)
+            contract.contract_end_date = data.get('contract_end_date', contract.contract_end_date)
+            contract.salary = data.get('salary', contract.salary)
+            contract.active = data.get('active', contract.active)
+            contract.save()
+            return JsonResponse({'message': 'Contract updated successfully'})
+        except Contract.DoesNotExist:
+            return JsonResponse({'error': 'Contract not found'}, status=404)
+
+
+@csrf_exempt
+def delete_contract(request, pk):
+    """
+    Handles DELETE requests to remove a contract from the system.
+
+    """
+    if request.method == 'DELETE':
+        try:
+            contract = Contract.objects.get(pk=pk)
+            contract.delete()
+            return JsonResponse({'message': 'Contract deleted successfully'})
+        except Contract.DoesNotExist:
+            return JsonResponse({'error': 'Contract not found'}, status=404)
